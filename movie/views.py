@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from .models import ReviewMovie
 from rest_framework.response import Response
 from .utils import analyze_opinion
+from rest_framework import status
 # Create your views here.
 
 @api_view(["POST"])
@@ -31,8 +32,38 @@ def review_submit(request):
 def review_list(request):
     queryset = ReviewMovie.objects.all()
     serializer = ReviewMovieSerializer(queryset, many=True)
-    print("data", serializer.data)  
-    return HttpResponse("testing")
+    #print("data", serializer.data)  
+    return Response(
+        serializer.data, 
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+def Add_movie(request):
+    serializer = ReviewMovieSerializer(data = request.data)
+
+    if serializer.is_valid():
+        data = serializer.validated_data
+        
+        movie_name = data.get("movie_name")
+        movie_review = data.get("movie_review")
+        movie_rating = data.get("movie_rating")
+        opinion = analyze_opinion(movie_review)
+        
+        ReviewMovie.objects.create(
+            movie_name = movie_name, 
+            movie_review = movie_review, 
+            movie_rating = movie_rating, 
+            movie_opinion = opinion
+        )
+        
+        return Response(
+            {"message":"saved success"},
+            status= status.HTTP_201_CREATED
+        )
+        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
