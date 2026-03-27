@@ -67,7 +67,27 @@ def Add_movie(request):
 
 
 
+#UI for frontend
+def review_page(request):
+    if request.method == "POST":
+        movie_name = request.POST.get("movie_name")
+        movie_review = request.POST.get("movie_review")
+        movie_rating = request.POST.get("movie_rating")
+        
+        opinion = analyze_opinion(movie_review)
+        
+        ReviewMovie.objects.create(
+            movie_name = movie_name, 
+            movie_review = movie_review,
+            movie_rating = movie_rating,
+            movie_opinion = opinion
+        )
+        
+        return render(request, 'movie/index.html',{'opinion':opinion})
+    return render(request, 'movie/index.html')
+        
 '''
+
 queryset = ReviewMovie.objects.all()
     serializer = ReviewMovieSerializer(queryset, many=True)
     print("data", serializer.data)
